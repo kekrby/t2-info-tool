@@ -2,7 +2,14 @@
 
 # Information Collection Tool for T2 Macs
 
-set -euo pipefail
+set -eu
+
+if ! $(set -o pipefail > /dev/null 2>&1)
+then
+    echo Warning: pipefail is not supported by your shell, it will not be enabled
+else
+    set -o pipefail
+fi
 
 # Helpers
 mkcdir() {
@@ -72,7 +79,7 @@ mkcdir dmesg
 
 for i in "brcmfmac" "hci0" "apple-ib"
 do
-    if ! (dmesg | grep $i: || command -v journalctl > /dev/null && journalctl -kb 0 -g $i:) &> $i.txt
+    if ! (dmesg | grep $i: || command -v journalctl > /dev/null && journalctl -kb 0 -g $i:) > $i.txt 2>&1
     then
         rm $i.txt
     fi
