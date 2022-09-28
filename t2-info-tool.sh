@@ -107,7 +107,7 @@ Kernel Logger: $kernel_logger
 Session Type: $session_type" > info.txt
 
 # Kernel logs
-mkcdir klogs
+mkcdir kernel_logs
 
 for i in "brcmfmac" "hci0" "apple-ib"
 do
@@ -119,7 +119,7 @@ do
     fi
 done
 
-cd .. # dmesg
+cd .. # kernel_logs
 
 # Audio related stuff
 mkcdir audio
