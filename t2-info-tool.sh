@@ -26,6 +26,13 @@ kernel_ver="$(uname -r)"
 firmware_dir="/lib/firmware/"
 udev_rules_dir="/usr/lib/udev/rules.d/"
 
+if command -v loginctl > /dev/null
+then
+    session_type=$(loginctl show-session $(loginctl | grep $(whoami) | sed "s/[[:blank:]]*\([0-9]*\) .*/\1/") -p Type | cut -d = -f 2)
+else
+    session_type="unknown"
+fi
+
 audio_config_dir=""
 sound_server="none"
 
@@ -96,7 +103,8 @@ Sound Server: $sound_server
 Audio Configuration Directory: $audio_config_dir
 Firmware Directory: $firmware_dir
 Udev Rules Directory: $udev_rules_dir
-Kernel Logger: $kernel_logger" > info.txt
+Kernel Logger: $kernel_logger
+Session Type: $session_type" > info.txt
 
 # Kernel logs
 mkcdir klogs
