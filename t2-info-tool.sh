@@ -5,13 +5,9 @@
 set -euo pipefail
 
 # Helpers
-qmkpushdir() {
+mkcdir() {
     mkdir $1
-    pushd $1 > /dev/null
-}
-
-qpopd() {
-    popd > /dev/null
+    cd $1
 }
 
 temp_dir="$(mktemp -d)"
@@ -59,7 +55,7 @@ esac
 
 cd $temp_dir
 
-qmkpushdir result
+mkcdir result
 
 # General information
 echo "\
@@ -72,7 +68,7 @@ Firmware Directory: $firmware_dir
 Udev Rules Directory: $udev_rules_dir" > info.txt
 
 # Kernel logs
-qmkpushdir dmesg
+mkcdir dmesg
 
 for i in "brcmfmac" "hci0" "apple-ib"
 do
@@ -82,10 +78,10 @@ do
     fi
 done
 
-qpopd # dmesg
+cd .. # dmesg
 
 # Audio related stuff
-qmkpushdir audio
+mkcdir audio
 
 cat /proc/asound/cards > asound-cards.txt
 ls "$udev_rules_dir" > udev-rule-list.txt
@@ -105,29 +101,29 @@ esac
 
 if [ -d "$audio_config_dir" ]
 then
-    qmkpushdir files
+    mkcdir files
 
     for file in $audio_config_dir/profile-sets/apple-t2* $audio_config_dir/paths/t2*
     do
         cat $file > $(basename $file)
     done
 
-    qpopd # files
+    cd .. # files
 fi
 
-qpopd # audio
+cd .. # audio
 
 # Installed firmware
-qmkpushdir firmware
+mkcdir firmware
 
 for i in "brcm"
 do
     sha256sum $firmware_dir/$i/* > $i.txt
 done
 
-qpopd # firmware
+cd .. # firmware
 
-qpopd # result
+cd .. # result
 
 tar cf result.tar.gz result
 
