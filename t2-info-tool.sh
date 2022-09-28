@@ -23,6 +23,9 @@ distro="$(sed -n 's/PRETTY_NAME="\(.*\)"/\1/p' /etc/os-release)"
 model="$(cat /sys/class/dmi/id/product_name)"
 kernel_ver="$(uname -r)"
 
+firmware_dir="/lib/firmware/"
+udev_rules_dir="/usr/lib/udev/rules.d/"
+
 audio_config_dir=""
 sound_server="none"
 
@@ -36,6 +39,13 @@ do
         break
     fi
 done
+
+case "$sound_server" in
+    *pipewire)
+        audio_config_dir="/usr/share/alsa-card-profile/mixer/";;
+    *pulseaudio)
+        audio_config_dir="/usr/share/pulseaudio/alsa-mixer/";;
+esac
 
 for logger in "journalctl" "dmesg"
 do
@@ -63,17 +73,14 @@ case "$distro" in
                 audio_config_dir="$(ldd $sound_server | sed -n 's/[[:blank:]]*libpipewire.*=>[[:blank:]]*\(.*\)\/lib\/libpipewire.* (.*)/\1/p')/share/alsa-card-profile/mixer/";;
             *pulseaudio)
                 audio_config_dir="$(command -v pulseaudio | xargs dirname | xargs dirname)/share/pulseaudio/alsa-mixer/";;
-        esac;;
-    *)
-        firmware_dir="/lib/firmware/"
-        udev_rules_dir="/usr/lib/udev/rules.d/"
+        esac
 
-        case "$sound_server" in
-            *pipewire)
-                audio_config_dir="/usr/share/alsa-card-profile/mixer/";;
-            *pulseaudio)
-                audio_config_dir="/usr/share/pulseaudio/alsa-mixer/";;
-        esac;;
+        path=$(nix shell nixpkgs\#pciutils nixpkgs\#usbutils -c sh -c 'echo $PATH' 2> /dev/null || nix-shell -p pciutils usbutils --run 'echo $PATH' 2> /dev/null || true)
+
+        if ! [ -z "$path" ]
+        then
+            export PATH="$path"
+        fi;;
 esac
 
 cd $temp_dir
