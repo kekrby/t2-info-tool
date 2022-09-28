@@ -37,6 +37,22 @@ do
     fi
 done
 
+for logger in "journalctl" "dmesg"
+do
+    if command -v $logger > /dev/null
+    then
+        kernel_logger="$logger"
+        break
+    fi
+done
+
+case "$logger" in
+    journalctl)
+        kernel_logger_find="journalctl -kbg";;
+    dmesg)
+        kernel_logger_find="dmesg | grep";;
+esac
+
 case "$distro" in
     NixOS*)
         firmware_dir="/run/current-system/firmware"
@@ -72,16 +88,19 @@ Kernel Version: $kernel_ver
 Sound Server: $sound_server
 Audio Configuration Directory: $audio_config_dir
 Firmware Directory: $firmware_dir
-Udev Rules Directory: $udev_rules_dir" > info.txt
+Udev Rules Directory: $udev_rules_dir
+Kernel Logger: $kernel_logger" > info.txt
 
 # Kernel logs
-mkcdir dmesg
+mkcdir klogs
 
 for i in "brcmfmac" "hci0" "apple-ib"
 do
-    if ! (dmesg | grep $i: || command -v journalctl > /dev/null && journalctl -kb 0 -g $i:) > $i.txt 2>&1
+    out=$($kernel_logger_find $i: 2>&1 || true)
+
+    if [ $? -eq 0 ]
     then
-        rm $i.txt
+        echo "$out" > $i.txt
     fi
 done
 
