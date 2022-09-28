@@ -79,7 +79,7 @@ case "$distro" in
             *pipewire)
                 audio_config_dir="$(ldd $sound_server | sed -n 's/[[:blank:]]*libpipewire.*=>[[:blank:]]*\(.*\)\/lib\/libpipewire.* (.*)/\1/p')/share/alsa-card-profile/mixer/";;
             *pulseaudio)
-                audio_config_dir="$(command -v pulseaudio | xargs dirname | xargs dirname)/share/pulseaudio/alsa-mixer/";;
+                audio_config_dir="$(dirname $sound_server | xargs dirname)/share/pulseaudio/alsa-mixer/";;
         esac
 
         path=$(nix shell nixpkgs\#pciutils nixpkgs\#usbutils -c sh -c 'echo $PATH' 2> /dev/null || nix-shell -p pciutils usbutils --run 'echo $PATH' 2> /dev/null || true)
