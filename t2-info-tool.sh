@@ -149,6 +149,21 @@ done
 
 cd .. # firmware
 
+mkcdir misc
+
+for command in "dkms status" "lspci -k" "lsusb -vv" "lsmod" "systemctl status bluetooth" "ip link" "mount" "rfkill" "lsblk"
+do
+    if command -v $(echo "$command" | cut -d " " -f 1) > /dev/null
+    then
+        name=$(echo "$command" | sed "s/ /_/g")
+        mkdir $name
+
+        $command > $name/stdout.txt 2> $name/stderr.txt
+    fi
+done
+
+cd .. # misc
+
 cd .. # result
 
 tar cf result.tar.gz result
