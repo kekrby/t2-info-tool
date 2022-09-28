@@ -55,7 +55,7 @@ esac
 
 case "$distro" in
     NixOS*)
-        firmware_dir="/run/current-system/firmware"
+        firmware_dir="/run/current-system/firmware/"
         udev_rules_dir="/etc/udev/rules.d/"
 
         case "$sound_server" in
