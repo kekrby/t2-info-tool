@@ -4,17 +4,19 @@
 
 set -eu
 
-if ! $(set -o pipefail > /dev/null 2>&1)
+# shellcheck disable=SC3040
+if ! (set -o pipefail > /dev/null 2>&1)
 then
     echo Warning: pipefail is not supported by your shell, it will not be enabled
 else
+    # shellcheck disable=SC3040
     set -o pipefail
 fi
 
 # Helpers
 mkcdir() {
-    mkdir $1
-    cd $1
+    mkdir "$1"
+    cd "$1"
 }
 
 temp_dir="$(mktemp -d)"
@@ -30,7 +32,7 @@ session_type="unknown"
 
 if command -v loginctl > /dev/null
 then
-    session_type=$(loginctl show-session $(loginctl | grep $(whoami) | sed "s/[[:blank:]]*\([0-9]*\) .*/\1/") -p Type | cut -d = -f 2)
+    session_type="$(loginctl show-session "$(loginctl | grep "$(whoami)" | sed "s/[[:blank:]]*\([0-9]*\) .*/\1/")" -p Type | cut -d = -f 2)"
 fi
 
 audio_config_dir=""
@@ -38,9 +40,8 @@ sound_server="none"
 
 for server in "pipewire" "pulseaudio"
 do
-    path="$(command -v "$server")"
 
-    if [ $? -eq 0 ]
+    if path="$(command -v "$server")"
     then
         sound_server="$path"
         break
@@ -56,7 +57,7 @@ esac
 
 for logger in "journalctl" "dmesg"
 do
-    if command -v $logger > /dev/null
+    if command -v "$logger" > /dev/null
     then
         kernel_logger="$logger"
         break
@@ -77,20 +78,21 @@ case "$distro" in
 
         case "$sound_server" in
             *pipewire)
-                audio_config_dir="$(ldd $sound_server | sed -n 's/[[:blank:]]*libpipewire.*=>[[:blank:]]*\(.*\)\/lib\/libpipewire.* (.*)/\1/p')/share/alsa-card-profile/mixer/";;
+                audio_config_dir="$(ldd "$sound_server" | sed -n 's/[[:blank:]]*libpipewire.*=>[[:blank:]]*\(.*\)\/lib\/libpipewire.* (.*)/\1/p')/share/alsa-card-profile/mixer/";;
             *pulseaudio)
-                audio_config_dir="$(dirname $sound_server | xargs dirname)/share/pulseaudio/alsa-mixer/";;
+                audio_config_dir="$(dirname "$sound_server" | xargs dirname)/share/pulseaudio/alsa-mixer/";;
         esac
 
-        path=$(nix shell nixpkgs\#pciutils nixpkgs\#usbutils -c sh -c 'echo $PATH' || nix-shell -p pciutils usbutils --run 'echo $PATH' || true)
+        # shellcheck disable=SC2016
+        path="$(nix shell nixpkgs\#pciutils nixpkgs\#usbutils -c sh -c 'echo $PATH' || nix-shell -p pciutils usbutils --run 'echo $PATH' || true)"
 
-        if ! [ -z "$path" ]
+        if [ -n "$path" ]
         then
             export PATH="$path"
         fi;;
 esac
 
-cd $temp_dir
+cd "$temp_dir"
 
 mkcdir result
 
@@ -111,9 +113,8 @@ mkcdir kernel_logs
 
 for i in "brcmfmac" "hci0" "apple-ib" "bce.vhci" "apple.bce" "aaudio" "apple.gmux" "amdgpu" "i915"
 do
-    out=$($kernel_logger_find $i: 2>&1 || true)
 
-    if [ $? -eq 0 ]
+    if out="$($kernel_logger_find $i: 2>&1 || true)"
     then
         echo "$out" > $i.txt
     fi
@@ -144,12 +145,7 @@ if [ -d "$audio_config_dir" ]
 then
     mkcdir files
 
-    files=$(echo $audio_config_dir/profile-sets/apple-t2* $audio_config_dir/paths/t2*)
-
-    if ! [ -z "$files" ]
-    then
-        cp $files .
-    fi
+    find "$audio_config_dir" -name "*t2*" -exec cp {} . ';'
 
     cd .. # files
 fi
@@ -159,6 +155,7 @@ cd .. # audio
 # Installed firmware
 mkcdir firmware
 
+# shellcheck disable=SC2043
 for i in "brcm"
 do
     sha256sum $firmware_dir/$i/* > $i.txt
@@ -170,12 +167,12 @@ mkcdir misc
 
 for command in "dkms status" "lspci -k" "lsusb -vv" "lsmod" "systemctl status bluetooth" "ip link" "mount" "rfkill" "lsblk"
 do
-    if command -v $(echo "$command" | cut -d " " -f 1) > /dev/null
+    if command -v "$(echo "$command" | cut -d " " -f 1)" > /dev/null
     then
-        name=$(echo "$command" | sed "s/ /_/g")
-        mkdir $name
+        name="$(echo "$command" | sed "s/ /_/g")"
+        mkdir "$name"
 
-        $command > $name/stdout.txt 2> $name/stderr.txt
+        $command > "$name/stdout.txt" 2> "$name/stderr.txt"
     fi
 done
 
@@ -185,4 +182,4 @@ cd .. # result
 
 tar cf result.tar.gz result
 
-echo Your report is in $temp_dir/result.tar.gz
+echo Your report is in "$temp_dir/result.tar.gz"
