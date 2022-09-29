@@ -144,10 +144,12 @@ if [ -d "$audio_config_dir" ]
 then
     mkcdir files
 
-    for file in $audio_config_dir/profile-sets/apple-t2* $audio_config_dir/paths/t2*
-    do
-        cat $file > $(basename $file)
-    done
+    files=$(echo $audio_config_dir/profile-sets/apple-t2* $audio_config_dir/paths/t2*)
+
+    if ! [ -z "$files" ]
+    then
+        cp $files .
+    fi
 
     cd .. # files
 fi
