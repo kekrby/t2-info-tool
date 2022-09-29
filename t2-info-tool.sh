@@ -26,11 +26,11 @@ kernel_ver="$(uname -r)"
 firmware_dir="/lib/firmware/"
 udev_rules_dir="/usr/lib/udev/rules.d/"
 
+session_type="unknown"
+
 if command -v loginctl > /dev/null
 then
     session_type=$(loginctl show-session $(loginctl | grep $(whoami) | sed "s/[[:blank:]]*\([0-9]*\) .*/\1/") -p Type | cut -d = -f 2)
-else
-    session_type="unknown"
 fi
 
 audio_config_dir=""
