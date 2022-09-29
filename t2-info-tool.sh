@@ -109,7 +109,7 @@ Session Type: $session_type" > info.txt
 # Kernel logs
 mkcdir kernel_logs
 
-for i in "brcmfmac" "hci0" "apple-ib"
+for i in "brcmfmac" "hci0" "apple-ib" "bce.vhci" "apple.bce" "aaudio" "apple.gmux" "amdgpu" "i915"
 do
     out=$($kernel_logger_find $i: 2>&1 || true)
 
