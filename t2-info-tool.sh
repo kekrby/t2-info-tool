@@ -65,7 +65,7 @@ done
 
 case "$logger" in
     journalctl)
-        kernel_logger_find="journalctl -kbg";;
+        kernel_logger_find="journalctl -kb -g";;
     dmesg)
         kernel_logger_find="dmesg | grep";;
 esac
