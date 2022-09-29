@@ -82,7 +82,7 @@ case "$distro" in
                 audio_config_dir="$(dirname $sound_server | xargs dirname)/share/pulseaudio/alsa-mixer/";;
         esac
 
-        path=$(nix shell nixpkgs\#pciutils nixpkgs\#usbutils -c sh -c 'echo $PATH' 2> /dev/null || nix-shell -p pciutils usbutils --run 'echo $PATH' 2> /dev/null || true)
+        path=$(nix shell nixpkgs\#pciutils nixpkgs\#usbutils -c sh -c 'echo $PATH' || nix-shell -p pciutils usbutils --run 'echo $PATH' || true)
 
         if ! [ -z "$path" ]
         then
