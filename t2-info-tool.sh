@@ -38,6 +38,13 @@ fi
 audio_config_dir=""
 sound_server="none"
 
+mbpfan_installed="no"
+
+if command -v mbpfan > /dev/null
+then
+    mbpfan_installed="yes"
+fi
+
 for server in "pipewire" "pulseaudio"
 do
 
@@ -106,7 +113,8 @@ Audio Configuration Directory: $audio_config_dir
 Firmware Directory: $firmware_dir
 Udev Rules Directory: $udev_rules_dir
 Kernel Logger: $kernel_logger
-Session Type: $session_type" > info.txt
+Session Type: $session_type
+Mbpfan Installed: $mbpfan_installed" > info.txt
 
 # Kernel logs
 mkcdir kernel_logs
