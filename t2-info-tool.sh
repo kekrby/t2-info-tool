@@ -180,7 +180,7 @@ do
         name="$(echo "$command" | sed "s/ /_/g")"
         mkdir "$name"
 
-        $command > "$name/stdout.txt" 2> "$name/stderr.txt"
+        $command > "$name/stdout.txt" 2> "$name/stderr.txt" || true
     fi
 done
 
